@@ -4,95 +4,121 @@ Find What Moves You 🎬
 
 FILMIX is a full-stack movie discovery application built with React, TypeScript, Node.js, Express, TMDB, and MongoDB.
 
-✨ Features
+Users can discover movies, search for titles, filter and sort results, view movie details and recommendations, and save movies to My Collection.
 
-🎬 Browse popular movies
+Features
 
-🔎 Search movies with debounced search
+Browse popular movies
 
-🎭 Filter by genre
+Search movies
 
-📅 Filter by release year
+Filter by genre
 
-⭐ Sort by popularity, rating, or newest releases
+Filter by release year
 
-🚫 Newest sort shows released movies only
+Sort by popularity, rating, or newest releases
 
-⭐ Shows N/A when a movie has no available rating votes
+Newest sort shows released movies only
 
-📖 View movie details
+Display N/A when rating votes are unavailable
 
-🎯 Explore recommendations
+View movie details and recommendations
 
-❤️ Save and remove movies from My Collection
+Save and remove movies from My Collection
 
-💾 Anonymous browser-based wishlist using a clientId
+Anonymous browser-based collection using clientId
 
-📱 Responsive desktop and mobile UI
+Responsive desktop and mobile UI
 
-➕ Load more movies
+Load more movies
 
-🛠️ Tech Stack
+Tech Stack
 
 Frontend
 
-React · TypeScript · Vite · Tailwind CSS
+React
+
+TypeScript
+
+Vite
+
+Tailwind CSS
 
 Backend
 
-Node.js · Express · TypeScript
+Node.js
 
-APIs & Database
+Express
 
-TMDB API · MongoDB
+TypeScript
 
-🏗️ Architecture
+API & Database
 
-React Client (React + TypeScript + Vite)
-                 │
-                 │ REST API
-                 ▼
-Express Server (Node.js + TypeScript)
-            ┌────┴────┐
-            ▼         ▼
-          TMDB     MongoDB
-           API     Wishlist
+TMDB API
 
-The React frontend communicates with the Express backend. The frontend does not call TMDB directly.
+MongoDB
 
-📂 Project Structure
+Application Architecture
+
+FILMIX follows a client-server architecture.
+
+React Client
+React + TypeScript + Vite
+
+↓ REST API
+
+Express Server
+Node.js + Express + TypeScript
+
+↓
+
+TMDB API — movie data
+
+MongoDB — wishlist storage
+
+The frontend communicates with the Express backend through REST API endpoints. The frontend does not call TMDB directly.
+
+Project Structure
 
 FILMIX/
 ├── client/
-│   └── src/
-│       ├── components/
-│       ├── hooks/
-│       ├── services/
-│       ├── utils/
-│       ├── App.tsx
-│       ├── main.tsx
-│       ├── styles.css
-│       └── types.ts
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── styles.css
+│   │   └── types.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+│
 ├── server/
-│   └── src/
-│       ├── models/
-│       ├── routes/
-│       ├── services/
-│       ├── config.ts
-│       ├── server.ts
-│       └── types.ts
+│   ├── src/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── config.ts
+│   │   ├── server.ts
+│   │   └── types.ts
+│   ├── .env.example
+│   ├── package.json
+│   └── tsconfig.json
+│
 ├── .gitignore
 └── README.md
 
-🔌 API Routes
+API Endpoints
 
-Movies
+Movie API
 
 Method
 
 Endpoint
 
-Purpose
+Description
 
 GET
 
@@ -130,13 +156,13 @@ GET
 
 Get recommendations
 
-Wishlist
+Wishlist API
 
 Method
 
 Endpoint
 
-Purpose
+Description
 
 GET
 
@@ -156,7 +182,7 @@ DELETE
 
 Remove a movie
 
-🔐 Environment Variables
+Environment Variables
 
 Create server/.env using server/.env.example as a reference.
 
@@ -169,9 +195,9 @@ CACHE_TTL_SECONDS=300
 
 Never commit your real .env file or API credentials to GitHub.
 
-🚀 Getting Started
+Getting Started
 
-1. Clone
+1. Clone the repository
 
 git clone https://github.com/spurthygowda08/FILMIX.git
 cd FILMIX
@@ -188,35 +214,47 @@ In another terminal:
 cd server
 npm install
 
-4. Configure environment
+4. Configure environment variables
 
 Create server/.env and add your TMDB and MongoDB configuration.
 
-5. Start backend
+5. Start the backend
 
-From server:
-
+cd server
 npm run dev
 
-6. Start frontend
+6. Start the frontend
 
-From client:
-
+cd client
 npm run dev
 
-💡 Wishlist Design
+Open the local Vite URL shown in the terminal.
 
-FILMIX supports an anonymous browser-based collection without requiring user authentication.
+Wishlist Design
 
-A unique clientId is stored in localStorage and sent to the backend through the x-client-id header.
+FILMIX uses an anonymous browser-based collection without requiring user authentication.
 
-The wishlist uses clientId + movieId to prevent duplicate saved movies for the same browser.
+A unique clientId is stored in localStorage and sent to the backend through the x-client-id request header.
 
-📱 Responsive Experience
+The wishlist uses clientId and movieId to prevent duplicate saved movies for the same browser.
 
-The UI is designed for desktop and mobile, including responsive navigation, horizontal genre/movie rails, movie grids, mobile-friendly filters, and responsive movie details.
+Responsive Design
 
-🧪 Quality Checks
+FILMIX is designed for desktop and mobile screens, including:
+
+Responsive navigation
+
+Horizontal genre scrolling
+
+Horizontal movie rails
+
+Responsive movie grids
+
+Mobile-friendly filters
+
+Responsive movie details
+
+Quality Checks
 
 The application has been tested for:
 
@@ -224,9 +262,13 @@ Desktop UI
 
 Mobile responsiveness
 
-Genre and year filtering
+Genre filtering
 
-Sorting and newest-release behavior
+Year filtering
+
+Sorting
+
+Newest released-only behavior
 
 Rating and N/A handling
 
@@ -238,7 +280,7 @@ My Collection
 
 Load More
 
-Refresh/routing
+Page refresh and routing
 
 Browser console errors
 
@@ -246,23 +288,23 @@ Production build
 
 The frontend production build completes successfully with Vite.
 
-📌 Future Improvements
+Future Improvements
 
 User authentication and accounts
 
 Personalized recommendations
 
-Pagination/infinite scrolling
+Pagination or infinite scrolling
 
 Watchlist categories
 
-Advanced filters
+Advanced movie filters
 
 Automated testing
 
 Production deployment
 
-👤 Author
+Author
 
 Spurthy Gowda
 
