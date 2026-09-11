@@ -7,6 +7,7 @@ import {
   Link,
   useNavigate,
   useParams,
+  useLocation,
   useSearchParams,
 } from "react-router-dom";
 
@@ -56,7 +57,10 @@ function formatRelease(movie: Pick<Movie, "releaseDate">) {
     `${movie.releaseDate}T00:00:00`,
   );
 
-  return releaseDate > new Date()
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return releaseDate > today
     ? "Not released"
     : movie.releaseDate.slice(0, 4);
 }
@@ -81,6 +85,9 @@ function useWishlist() {
   const [items, setItems] =
     useState<any[]>([]);
 
+  const [wishlistError, setWishlistError] =
+    useState("");
+
 
   /* -------------------------------------------------------
      LOAD COLLECTION
@@ -99,15 +106,21 @@ function useWishlist() {
         new Set(
           data.map(
             (item: any) =>
-              item.movieId
+              Number(item.movieId)
           )
         )
       );
-    } catch {
+
+      setWishlistError("");
+    } catch (error: any) {
       /*
-       * Collection errors should not
-       * prevent movie browsing.
+       * Collection errors should not prevent
+       * the main movie browsing experience.
        */
+      setWishlistError(
+        error?.message ||
+          "Unable to load your collection."
+      );
     }
   };
 
@@ -117,7 +130,7 @@ function useWishlist() {
   ------------------------------------------------------- */
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, []);
 
 
@@ -129,6 +142,8 @@ function useWishlist() {
     movie: Movie
   ) => {
     try {
+      setWishlistError("");
+
       if (
         ids.has(movie.id)
       ) {
@@ -144,11 +159,11 @@ function useWishlist() {
       }
 
       await refresh();
-    } catch {
-      /*
-       * Keep the UI usable even if
-       * collection requests fail.
-       */
+    } catch (error: any) {
+      setWishlistError(
+        error?.message ||
+          "Unable to update your collection. Please try again."
+      );
     }
   };
 
@@ -157,6 +172,7 @@ function useWishlist() {
     ids,
     items,
     toggle,
+    wishlistError,
   };
 }
 
@@ -336,6 +352,7 @@ function ResponsiveFilter({
    DISCOVER / HOME PAGE
 ========================================================= */
 
+
 function DiscoverPage() {
 
   const [
@@ -345,6 +362,9 @@ function DiscoverPage() {
 
   const navigate =
     useNavigate();
+
+  const location =
+    useLocation();
 
 
   /* -------------------------------------------------------
@@ -364,6 +384,54 @@ function DiscoverPage() {
   const year =
     params.get("year") ||
     "";
+
+  /* -------------------------------------------------------
+     RESTORE DISCOVER SCROLL POSITION
+  ------------------------------------------------------- */
+
+  useEffect(() => {
+    if (window.location.hash !== "#discover") {
+      return;
+    }
+
+    let cancelled = false;
+    let frameId = 0;
+
+    const restoreDiscover = () => {
+      if (cancelled) {
+        return;
+      }
+
+      const discoverSection =
+        document.getElementById("discover");
+
+      /*
+       * The Discover section is rendered after the movie request
+       * finishes. Keep checking until the section exists, then
+       * restore the user to it.
+       */
+      if (!discoverSection) {
+        frameId = window.requestAnimationFrame(
+          restoreDiscover
+        );
+        return;
+      }
+
+      discoverSection.scrollIntoView({
+        behavior: "auto",
+        block: "start",
+      });
+    };
+
+    frameId = window.requestAnimationFrame(
+      restoreDiscover
+    );
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   /* -------------------------------------------------------
      SEARCH STATE
@@ -432,6 +500,7 @@ function DiscoverPage() {
   const {
     ids,
     toggle,
+    wishlistError,
   } = useWishlist();
 
 
@@ -700,7 +769,6 @@ function DiscoverPage() {
         params
       );
 
-
     if (value) {
 
       next.set(
@@ -714,18 +782,20 @@ function DiscoverPage() {
 
     }
 
-
     /*
-     * Changing a discovery filter
-     * clears an active search.
+     * Genre and Year switch back to discovery mode,
+     * so they clear an active search.
+     *
+     * Sort only changes ordering and should preserve
+     * the current search query.
      */
 
-    next.delete("q");
-
+    if (key !== "sort") {
+      next.delete("q");
+      setInput("");
+    }
 
     setParams(next);
-
-    setInput("");
 
     setPage(1);
 
@@ -815,6 +885,9 @@ function DiscoverPage() {
     ? movies
     : movies.slice(6);
 
+
+  const discoverReturnTo =
+    `${location.pathname}${location.search}#discover`;
 
   /* =======================================================
      HERO BACKGROUND
@@ -958,6 +1031,7 @@ function DiscoverPage() {
 
                   <Link
                     to={`/movie/${featured.id}`}
+                    state={{ from: discoverReturnTo }}
                     className="primary-btn"
                   >
 
@@ -1061,6 +1135,15 @@ function DiscoverPage() {
         className="container main-content"
         id="discover"
       >
+
+        {wishlistError && (
+          <p
+            className="form-error"
+            role="alert"
+          >
+            {wishlistError}
+          </p>
+        )}
 
 
         {/* =================================================
@@ -1409,6 +1492,12 @@ function MovieDetailsPage() {
   const { id } =
     useParams();
 
+  const location = useLocation();
+
+  const returnTo =
+    (location.state as { from?: string } | null)?.from ||
+    "/#discover";
+
 
   const [movie, setMovie] =
     useState<
@@ -1429,6 +1518,7 @@ function MovieDetailsPage() {
   const {
     ids,
     toggle,
+    wishlistError,
   } = useWishlist();
 
 
@@ -1620,8 +1710,17 @@ function MovieDetailsPage() {
 
         <div className="container detail-content">
 
+          {wishlistError && (
+            <p
+              className="form-error"
+              role="alert"
+            >
+              {wishlistError}
+            </p>
+          )}
+
           <Link
-            to="/"
+            to={returnTo}
             className="back-link"
           >
             ← Back to discover
@@ -1863,6 +1962,7 @@ function WishlistPage() {
     items,
     ids,
     toggle,
+    wishlistError,
   } = useWishlist();
 
   /* -------------------------------------------------------
@@ -1925,6 +2025,15 @@ function WishlistPage() {
   return (
 
     <main className="container page-pad collection-page">
+
+      {wishlistError && (
+        <p
+          className="form-error"
+          role="alert"
+        >
+          {wishlistError}
+        </p>
+      )}
 
       {/* =================================================
           COLLECTION HEADER
@@ -2070,7 +2179,6 @@ function WishlistPage() {
 ========================================================= */
 
 export default function App() {
-
   return (
 
     <div className="app">

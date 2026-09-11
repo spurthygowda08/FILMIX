@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { Movie } from "../types";
 import { api } from "../services/api";
 
@@ -16,6 +16,9 @@ export default function MovieCard({
   onWishlist,
   compact = false,
 }: Props) {
+  const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}#discover`;
+
   const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const startPrefetch = () => {
@@ -57,6 +60,7 @@ export default function MovieCard({
       <div className="poster-wrap">
         <Link
           to={`/movie/${movie.id}`}
+          state={{ from: returnTo }}
           className="poster-link"
           aria-label={`Open ${movie.title}`}
         >
@@ -99,6 +103,7 @@ export default function MovieCard({
       <div className="movie-info">
         <Link
           to={`/movie/${movie.id}`}
+          state={{ from: returnTo }}
           className="movie-title"
           title={movie.title}
         >
