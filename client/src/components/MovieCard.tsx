@@ -19,7 +19,9 @@ export default function MovieCard({
   const location = useLocation();
   const returnTo = `${location.pathname}${location.search}#discover`;
 
-  const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const startPrefetch = () => {
     if (prefetchTimer.current) {
@@ -27,8 +29,8 @@ export default function MovieCard({
     }
 
     // Wait briefly so simply moving the mouse across the grid does not
-    // trigger a request for every card. A deliberate hover warms both the
-    // movie-details and recommendations caches.
+    // trigger a request for every card. A deliberate hover warms both
+    // the movie-details and recommendations caches.
     prefetchTimer.current = window.setTimeout(() => {
       api.prefetchMovieData(movie.id);
     }, 350);
@@ -64,9 +66,9 @@ export default function MovieCard({
           className="poster-link"
           aria-label={`Open ${movie.title}`}
         >
-          {movie.posterUrl ? (
+          {movie.posterUrl || movie.backdropUrl ? (
             <img
-              src={movie.posterUrl}
+              src={movie.posterUrl || movie.backdropUrl || ""}
               alt={movie.title}
               loading="lazy"
               decoding="async"
@@ -93,7 +95,11 @@ export default function MovieCard({
                 ? `Remove ${movie.title} from collection`
                 : `Save ${movie.title} to collection`
             }
-            title={wishlisted ? "Remove from collection" : "Add to collection"}
+            title={
+              wishlisted
+                ? "Remove from collection"
+                : "Add to collection"
+            }
           >
             {wishlisted ? "♥" : "♡"}
           </button>
@@ -113,13 +119,17 @@ export default function MovieCard({
         <div className="movie-meta">
           <span className="rating">
             <span>★</span>{" "}
-            {movie.voteCount && movie.voteCount > 0 && movie.rating > 0
+            {movie.voteCount &&
+            movie.voteCount > 0 &&
+            movie.rating > 0
               ? movie.rating.toFixed(1)
               : "N/A"}
           </span>
+
           <span>
             {movie.releaseDate
-              ? new Date(`${movie.releaseDate}T00:00:00`) > new Date()
+              ? new Date(`${movie.releaseDate}T00:00:00`) >
+                new Date()
                 ? "Not released"
                 : movie.releaseDate.slice(0, 4)
               : "—"}
