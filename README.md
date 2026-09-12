@@ -1,594 +1,673 @@
 # FILMIX
 
-## Find What Moves You 🎬
+### Find What Moves You 🎬
 
-FILMIX is a full-stack movie discovery application built with React,
-TypeScript, Node.js, Express, TMDB, and MongoDB.
+FILMIX is a full-stack movie discovery application built as part of the **Trackzio Full-Stack Intern Assignment**.
 
-The application allows users to browse movies without searching, search
-for specific titles, filter and sort results, view movie details and
-recommendations, and save movies to a persistent My Collection.
+The application allows users to discover movies without searching, filter and sort results, search for specific titles, view detailed movie information, explore recommendations, and save movies to a persistent personal collection.
 
-------------------------------------------------------------------------
+---
 
-## Features
+## Overview
 
--   Browse movies without searching
--   Search movies by title
--   Filter movies by genre
--   Filter movies by release year
--   Sort by popularity, rating, or newest releases
--   Newest sorting shows released movies only
--   Display `N/A` when rating information is unavailable
--   View detailed movie information
--   Explore movie recommendations
--   Save and remove movies from My Collection
--   Persistent anonymous wishlist using a browser-based `clientId`
--   Load more movies as users continue exploring
--   Responsive desktop and mobile interface
--   Friendly loading, empty-result, and error states
--   Preserve search/filter context while navigating between movies and
-    recommendations
+The goal of FILMIX was to build a movie discovery experience that feels like a real product rather than a simple third-party API demonstration.
 
-------------------------------------------------------------------------
+The application uses **TMDB as the external movie data source**, while a **Node.js + Express backend** acts as the abstraction layer between the React frontend and TMDB.
 
-## Tech Stack
+The application also uses **MongoDB** to persist a user's movie collection.
+
+### Core User Flow
+
+1. Browse movies immediately from the home page.
+2. Explore movies using genres, year, and sorting options.
+3. Load more movies as the user continues exploring.
+4. Search for a specific movie.
+5. Open a movie to view detailed information.
+6. Explore similar/recommended movies.
+7. Add movies to **My Collection**.
+8. Return to the collection later, including after refreshing or reopening the application.
+
+---
+
+# Features
+
+### Movie Discovery
+
+- Browse movies without performing a search.
+- Featured movie section on the home page.
+- Popular movie section.
+- Discover/explore movie grid.
+- Load More functionality for larger result sets.
+
+### Search
+
+- Search movies by title.
+- Search requests are handled through the backend.
+- Debounced search input helps avoid unnecessary API requests.
+- Request cancellation helps handle rapid searches.
+
+### Filters & Sorting
+
+- Genre filtering.
+- Year filtering.
+- Sort by:
+  - Popularity
+  - Top Rated
+  - Newest
+- Filters can be combined to refine results.
+
+### Movie Details
+
+- Movie title
+- Poster and backdrop
+- Overview
+- Release information
+- Genres
+- Rating
+- Recommended movies
+
+### My Collection
+
+- Add movies to a personal collection.
+- Remove movies from the collection.
+- Collection persists using MongoDB.
+- Anonymous browser identification allows the application to maintain separate collections without requiring authentication.
+
+### Responsive Design
+
+- Responsive desktop layout.
+- Mobile-friendly movie grids.
+- Horizontal scrolling for movie/category rails where appropriate.
+- Responsive filtering controls.
+- Layout adapts to different screen sizes.
+
+### Edge Case Handling
+
+- Loading states.
+- Empty search results.
+- Missing movie information.
+- Movies without ratings.
+- Movies that have not yet been released.
+- External API failures.
+- Slow or unavailable external services.
+- Rapid search/filter changes.
+
+---
+
+# Tech Stack
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+
+## Backend
+
+- Node.js
+- Express
+- TypeScript
+
+## Database
+
+- MongoDB
+
+## External API
+
+- TMDB API
+
+---
+
+# Approach Taken
+
+The application was designed around the idea that the frontend should provide the user experience while the backend manages communication with external services and persistent data.
 
 ### Frontend
 
--   React
--   TypeScript
--   Vite
--   CSS3
--   React Router
+The React application is responsible for:
+
+- Rendering the user interface.
+- Managing filters and sorting.
+- Handling search input.
+- Displaying movie results.
+- Managing navigation.
+- Showing movie details.
+- Managing the user's collection interface.
 
 ### Backend
 
--   Node.js
--   Express
--   TypeScript
+The Node.js/Express backend is responsible for:
 
-### External API & Database
+- Providing application-specific API endpoints.
+- Communicating with TMDB.
+- Transforming TMDB responses into the application's own movie format.
+- Handling collection operations.
+- Communicating with MongoDB.
+- Handling external API errors and unexpected responses.
 
--   TMDB API
--   MongoDB
--   Mongoose
+### Data Flow
 
-------------------------------------------------------------------------
+TMDB movie data follows this flow:
 
-## Application Architecture
-
-FILMIX follows a client-server architecture.
-
-``` text
-React Client
-React + TypeScript + Vite
-        │
-        │ REST API
-        ▼
-Node.js + Express Backend
-        │
-        ├──────────────► TMDB API
-        │
-        └──────────────► MongoDB
-                         Wishlist
+```text
+React Frontend
+      ↓
+Node.js / Express API
+      ↓
+TMDB API
 ```
 
-The React frontend communicates only with the Node.js/Express backend.
+Collection-related operations follow:
 
-The frontend does not call TMDB directly. The backend acts as an
-abstraction layer between the application and the external movie API.
+```text
+React Frontend
+      ↓
+Node.js / Express API
+      ↓
+MongoDB
+```
 
-This keeps the external API credentials on the server and allows
-external movie data to be mapped into the application's own data
-structure.
+The frontend therefore does not communicate directly with TMDB.
 
-------------------------------------------------------------------------
-
-# Approach
-
-The application was designed as a real movie discovery product rather
-than a simple API demonstration.
-
-The main approach was to separate responsibilities between the frontend,
-backend, external movie service, and database.
-
-### Frontend
-
-The React application manages:
-
--   User interactions
--   Search and filtering
--   Sorting
--   Pagination through Load More
--   Movie browsing
--   Navigation between pages
--   Wishlist interactions
--   Responsive UI states
-
-Search and filter state is reflected in the URL where appropriate. This
-allows users to navigate between movie pages and return to the same
-browsing context.
-
-### Backend
-
-The Node.js/Express backend provides application-specific REST
-endpoints.
-
-It handles:
-
--   Requests from the React client
--   Communication with TMDB
--   External data mapping
--   Caching
--   Retry and timeout handling
--   Wishlist operations
--   MongoDB persistence
-
-### Database
-
-MongoDB is used for the My Collection feature.
-
-Authentication was intentionally not added because it was not required
-for the assignment. Instead, each browser receives an anonymous
-`clientId`.
-
-------------------------------------------------------------------------
+---
 
 # Important Technical Decisions
 
-## 1. Backend abstraction for TMDB
+## 1. Backend as an API Abstraction Layer
 
-The frontend never communicates directly with TMDB.
+The frontend communicates with the Node.js backend instead of calling TMDB directly.
 
-Instead:
+This provides a clear separation between:
 
-``` text
-React → Express → TMDB
+- UI logic
+- Application logic
+- External API communication
+- Database operations
+
+It also prevents the frontend from becoming tightly coupled to TMDB's response structure.
+
+---
+
+## 2. Normalizing Movie Data
+
+TMDB responses are transformed by the backend into the application's own movie representation.
+
+This allows the frontend to work with a consistent structure instead of depending directly on the external API response format.
+
+It also makes it easier to handle incomplete information safely.
+
+---
+
+## 3. Search Debouncing
+
+Search input is debounced so that the application does not send a request for every individual keystroke.
+
+For example, instead of requesting:
+
+```text
+I
+In
+Int
+Inte
+Inter
+Interstellar
 ```
 
-This provides a single backend layer where external API handling, error
-handling, caching, and data transformation can be managed.
+the application waits briefly for the user to stop typing before making the search request.
 
-------------------------------------------------------------------------
+This reduces unnecessary network requests and improves the overall experience.
 
-## 2. URL-based browsing state
+---
 
-Search, genre, year, and sorting state are represented through URL
-parameters.
+## 4. Request Cancellation
 
-For example:
+Rapid changes in search or filters can result in multiple requests being in progress at the same time.
 
-``` text
-/?q=batman
-```
+Request cancellation is used to reduce the possibility of an older response overriding a newer user request.
 
-or:
+---
 
-``` text
-/?genre=28&sort=vote_average.desc&year=2024
-```
+## 5. Pagination / Load More
 
-This makes browsing state shareable and allows the application to
-preserve context when navigating between movie details and
-recommendations.
+Instead of loading an unnecessarily large number of movies at once, results are loaded progressively.
 
-------------------------------------------------------------------------
+The **Load More** interaction allows users to continue exploring additional results when required.
 
-## 3. Anonymous wishlist persistence
+This keeps the initial page manageable while allowing the application to support larger result sets.
 
-FILMIX does not require users to create an account.
+---
 
-A unique browser `clientId` is stored in `localStorage` and sent to the
-backend using the:
+## 6. Wishlist / Collection Persistence
 
-``` text
+The collection is stored in MongoDB rather than only in frontend state.
+
+An anonymous `clientId` is stored in the browser and sent to the backend using the request header:
+
+```text
 x-client-id
 ```
 
-request header.
+This allows the backend to associate saved movies with the current browser without requiring user authentication.
 
-The wishlist uses both:
+A compound uniqueness constraint using:
 
-``` text
+```text
 clientId + movieId
 ```
 
-to identify a saved movie and prevent duplicate entries for the same
-browser.
+prevents the same movie from being added multiple times to the same collection.
 
-------------------------------------------------------------------------
+---
 
-## 4. Handling incomplete movie data
+## 7. Handling Incomplete Movie Data
 
-External API data may not always contain complete information.
+External movie APIs may not always provide complete information.
 
-The application therefore handles cases such as:
+FILMIX handles cases such as:
 
--   Missing poster images
--   Missing movie overviews
--   Missing rating information
--   Movies without rating votes
--   Future/unreleased movies
+- Missing poster images.
+- Missing release dates.
+- Missing ratings.
+- Movies that have not been released yet.
 
-For movies without usable rating votes, the interface displays:
+Movies without usable rating information are displayed as:
 
-``` text
+```text
 N/A
 ```
 
-rather than presenting an incorrect rating.
+Future releases are displayed as:
 
-------------------------------------------------------------------------
-
-## 5. Newest release handling
-
-When users select the newest sorting option, the backend applies
-release-date boundaries.
-
-Future release dates are excluded so that unreleased movies are not
-presented as already released movies.
-
-------------------------------------------------------------------------
-
-## 6. Performance and repeated requests
-
-The application considers repeated requests and rapid user interactions.
-
-The backend includes:
-
--   Response caching
--   In-flight request deduplication
--   Controlled concurrency
--   Request timeout handling
--   Retry handling for transient API failures
--   Handling of rate-limit responses
-
-The frontend also uses client-side caching for movie detail and
-recommendation data where appropriate.
-
-------------------------------------------------------------------------
-
-## 7. Navigation context
-
-Movie navigation preserves the user's browsing context.
-
-For example:
-
-``` text
-Search Batman
-      ↓
-Movie A
-      ↓
-Recommendation
-      ↓
-Movie B
-      ↓
-Back
-      ↓
-Movie A
-      ↓
-Back
-      ↓
-Batman search results
+```text
+Not released
 ```
 
-This prevents users from losing the results they were exploring.
+rather than presenting misleading information.
 
-------------------------------------------------------------------------
+---
 
-# API Endpoints
+## 8. Newest Movie Filtering
 
-## Movie API
+The "Newest" sorting option is designed to show released movies rather than future releases.
 
-  ----------------------------------------------------------------------------------------
-  Method                  Endpoint                                 Description
-  ----------------------- ---------------------------------------- -----------------------
-  GET                     `/api/movies/discover`                   Discover movies with
-                                                                   filters and sorting
+When a year is selected, the results are restricted to that year.
 
-  GET                     `/api/movies/search`                     Search movies
+For the current year, future release dates are excluded.
 
-  GET                     `/api/movies/:movieId`                   Get movie details
+This prevents unreleased movies from appearing as if they were already available.
 
-  GET                     `/api/movies/genres`                     Get available movie
-                                                                   genres
+---
 
-  GET                     `/api/movies/:movieId/recommendations`   Get movie
-                                                                   recommendations
-  ----------------------------------------------------------------------------------------
+## 9. Caching
 
-## Wishlist API
+The backend includes caching for repeated TMDB requests.
 
-  Method   Endpoint                   Description
-  -------- -------------------------- ------------------------------------------
-  GET      `/api/wishlist`            Get saved movies for the current browser
-  POST     `/api/wishlist`            Save a movie
-  DELETE   `/api/wishlist/:movieId`   Remove a movie
+Caching helps reduce unnecessary calls to the external service when the same discovery information is requested repeatedly.
 
-------------------------------------------------------------------------
+---
+
+## 10. Error Handling
+
+The application considers failures at multiple levels:
+
+- External API failures.
+- Invalid or incomplete API responses.
+- Empty search results.
+- Database-related failures.
+- Network delays.
+
+The UI provides appropriate feedback instead of assuming that every external request will succeed.
+
+---
 
 # Project Structure
 
-``` text
+```text
 FILMIX/
 │
 ├── client/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── utils/
-│   │   ├── App.tsx
-│   │   ├── main.tsx
-│   │   ├── styles.css
-│   │   └── types.ts
-│   │
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── vite.config.ts
+│   └── src/
+│       ├── components/
+│       ├── hooks/
+│       ├── services/
+│       ├── utils/
+│       ├── App.tsx
+│       ├── main.tsx
+│       ├── styles.css
+│       └── types.ts
 │
 ├── server/
-│   ├── src/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── config.ts
-│   │   ├── server.ts
-│   │   └── types.ts
-│   │
-│   ├── .env.example
-│   ├── package.json
-│   └── tsconfig.json
+│   └── src/
+│       ├── routes/
+│       ├── services/
+│       ├── models/
+│       ├── types.ts
+│       └── server.ts
 │
 ├── .gitignore
+├── .env.example
 └── README.md
 ```
 
-------------------------------------------------------------------------
+---
 
-# Assumptions
+# API Endpoints
 
-The following assumptions were made while implementing the application:
+## Movies
 
--   TMDB is used as the external source for movie information.
--   User authentication was not required for the assignment.
--   My Collection is scoped to an anonymous browser using `clientId`.
--   Movie metadata is retrieved from TMDB rather than permanently
-    storing the full movie catalogue in MongoDB.
--   MongoDB is primarily used for wishlist persistence.
--   The application is intended as a movie discovery experience and does
-    not provide movie streaming.
--   The application relies on the availability and response limits of
-    the external TMDB service.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/movies/discover` | Discover movies using filters and sorting |
+| GET | `/api/movies/trending` | Retrieve trending movie data |
+| GET | `/api/movies/search` | Search movies by title |
+| GET | `/api/movies/:movieId` | Retrieve movie details |
+| GET | `/api/movies/genres` | Retrieve available movie genres |
+| GET | `/api/movies/:movieId/recommendations` | Retrieve movie recommendations |
 
-------------------------------------------------------------------------
+## Collection
 
-# Error Handling & Edge Cases
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/wishlist` | Retrieve the current browser's collection |
+| POST | `/api/wishlist` | Add a movie to the collection |
+| DELETE | `/api/wishlist/:movieId` | Remove a movie from the collection |
 
-The application handles several real-world scenarios including:
+---
 
-### No search results
+# Database / Collection Design
 
-A clear empty state is shown when a search does not return any movies.
+The movie collection uses MongoDB.
 
-### Backend unavailable
+Each saved movie is associated with an anonymous browser identifier.
 
-If the backend cannot be reached, the application displays a
-user-friendly error message with a retry option.
+Conceptually, the stored data contains:
 
-### External API issues
+```text
+clientId
+movieId
+movie information / snapshot
+```
 
-The backend includes timeout, retry, caching, and transient failure
-handling for TMDB requests.
+The combination of:
 
-### Missing movie information
+```text
+clientId + movieId
+```
 
-Missing ratings, posters, overviews, and other incomplete fields are
-handled with appropriate fallbacks.
+is treated as unique to prevent duplicate entries.
 
-### Unreleased movies
+The application does not require user registration or authentication for the collection feature.
 
-Future release dates are handled separately from released movies.
+---
 
-### Rapid search/filter changes
-
-The frontend prevents stale responses from replacing newer search
-results when users change searches quickly.
-
-------------------------------------------------------------------------
-
-# Responsive Design
-
-FILMIX is designed for different screen sizes, including desktop and
-mobile devices.
-
-The interface includes:
-
--   Responsive navigation
--   Mobile-friendly filters
--   Horizontal genre scrolling
--   Horizontal movie rails
--   Responsive movie grids
--   Responsive movie details
--   Flexible poster layouts
--   Handling for long movie titles
-
-------------------------------------------------------------------------
-
-# Getting Started
+# Setup Instructions
 
 ## Prerequisites
 
 Make sure the following are installed:
 
--   Node.js
--   npm
--   MongoDB
--   TMDB API credentials
+- Node.js
+- npm
+- MongoDB
+- A TMDB API access token
 
-------------------------------------------------------------------------
+## 1. Clone the Repository
 
-## 1. Clone the repository
-
-``` bash
+```bash
 git clone https://github.com/spurthygowda08/FILMIX.git
 cd FILMIX
 ```
 
-------------------------------------------------------------------------
+## 2. Configure Environment Variables
 
-## 2. Install frontend dependencies
-
-``` bash
-cd client
-npm install
-```
-
-------------------------------------------------------------------------
-
-## 3. Install backend dependencies
-
-Open another terminal:
-
-``` bash
-cd server
-npm install
-```
-
-------------------------------------------------------------------------
-
-## 4. Configure environment variables
-
-Create:
-
-``` text
-server/.env
-```
-
-using:
-
-``` text
-server/.env.example
-```
-
-as a reference.
+Create a `.env` file inside the `server` directory.
 
 Example:
 
-``` env
+```env
 PORT=5000
 TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token
-TMDB_BASE_URL=https://api.themoviedb.org/3
+TMDB_BASE_URL=your_tmdb_base_url
 MONGODB_URI=your_mongodb_connection_string
 CLIENT_ORIGIN=http://localhost:5173
 CACHE_TTL_SECONDS=300
 ```
 
-Do not commit the real `.env` file or API credentials to GitHub.
+Refer to `.env.example` for the required environment variable names.
 
-------------------------------------------------------------------------
+> Do not commit the actual `.env` file or API credentials to GitHub.
 
-## 5. Start the backend
+## 3. Install Frontend Dependencies
 
-``` bash
-cd server
-npm run dev
-```
-
-The backend runs on port `5000` by default.
-
-------------------------------------------------------------------------
-
-## 6. Start the frontend
-
-In another terminal:
-
-``` bash
+```bash
 cd client
+npm install
+```
+
+## 4. Install Backend Dependencies
+
+Open another terminal:
+
+```bash
+cd server
+npm install
+```
+
+## 5. Start the Backend
+
+From the `server` directory:
+
+```bash
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal.
+The backend runs on the configured port, typically:
 
-------------------------------------------------------------------------
+```text
+http://localhost:5000
+```
+
+## 6. Start the Frontend
+
+From the `client` directory:
+
+```bash
+npm run dev
+```
+
+The Vite development server will provide the local frontend URL.
+
+Open that URL in your browser to use FILMIX.
+
+---
+
+# Assumptions
+
+The following assumptions were made while implementing the assignment:
+
+- TMDB is used as the external movie information provider.
+- Authentication is not required for the assignment.
+- The wishlist is designed as an anonymous browser-based collection.
+- A browser-generated `clientId` is used to associate saved movies with the current browser.
+- Clearing browser/site storage may remove the association with an anonymous collection.
+- Movie information depends on the availability and quality of data returned by TMDB.
+- The application should remain functional even when some optional movie information is unavailable.
+
+---
 
 # Known Limitations
 
--   The application currently uses anonymous browser-based collections
-    rather than authenticated user accounts.
--   Wishlist data is tied to the browser's `clientId`.
--   If the browser's local storage is cleared, the anonymous identity is
-    lost.
--   Movie data depends on the availability and rate limits of TMDB.
--   Recommendations are provided by the external movie service.
--   Automated frontend and backend test suites are not currently
-    included.
--   Production deployment and monitoring are outside the scope of this
-    assignment.
+### No User Authentication
 
-------------------------------------------------------------------------
+FILMIX does not currently have user accounts or login functionality.
 
-# Quality Checks
+The collection is associated with an anonymous browser identifier.
 
-The application was manually tested for:
+### Browser-Based Collection
 
--   Movie browsing
--   Search
--   Genre filtering
--   Year filtering
--   Sorting
--   Newest release behavior
--   Rating and `N/A` handling
--   Load More
--   Movie details
--   Recommendations
--   My Collection
--   Add/remove wishlist functionality
--   Page refresh
--   Direct movie URLs
--   Navigation context preservation
--   No-result states
--   Backend failure handling
--   Retry/recovery behavior
--   Mobile responsiveness
--   Desktop responsiveness
--   Rapid search changes
+Because the collection is anonymous, clearing browser storage can prevent the user from accessing the previously associated collection.
 
-------------------------------------------------------------------------
+### External API Dependency
 
-# AI-Assisted Development
+Movie information depends on TMDB.
 
-AI tools were used during development for brainstorming, debugging, code
-refinement, and reviewing implementation approaches.
+If TMDB is unavailable or changes its API behaviour, some movie-related functionality may be affected.
 
-AI assistance was used to help identify potential issues, improve
-implementation details, and reason about edge cases and user experience.
+### Automated Testing
 
-All generated suggestions were reviewed, adapted, tested, and integrated
-manually. The final implementation and design decisions were verified
-against the project requirements.
+The current implementation focuses primarily on functional validation and manual testing. A larger automated unit/integration test suite could be added in a future iteration.
 
-------------------------------------------------------------------------
+### Production Deployment
 
-# What I Would Improve With Additional Time
+The project is currently provided as a source repository and local full-stack application rather than a production deployment.
 
-With additional development time, I would consider:
+---
 
--   Adding automated frontend and backend tests
--   Adding user authentication and account-based collections
--   Improving request cancellation for rapidly changing searches
--   Adding more advanced filtering options
--   Improving pagination/infinite scrolling for very large result sets
--   Adding more comprehensive API monitoring and logging
--   Adding production deployment and environment configuration
--   Improving accessibility testing and keyboard navigation
--   Adding performance monitoring for real-world network conditions
+# Testing & Quality Checks
 
-------------------------------------------------------------------------
+The application was manually tested across the major user flows and edge cases.
+
+### Tested Functionality
+
+- Home page movie discovery
+- Genre filtering
+- Year filtering
+- Sorting
+- Newest released-only behaviour
+- Search
+- Movie details
+- Recommendations
+- Add to Collection
+- Remove from Collection
+- Collection persistence
+- Load More
+- Navigation
+- Page refresh and routing
+- Empty/no-result scenarios
+- Missing ratings
+- Future release status
+- Responsive mobile layout
+- Responsive filter controls
+- Browser console error checks
+
+The application was also checked on different screen sizes to ensure that the main discovery experience remains usable on mobile and desktop.
+
+---
+
+# AI Usage & Transparency
+
+AI tools were used as a supporting development resource during the project.
+
+I used **ChatGPT** to help with:
+
+- Understanding and breaking down the assignment requirements.
+- Understanding third-party API documentation and request handling.
+- Troubleshooting implementation issues.
+- Reviewing frontend and backend implementation details.
+- Assisting with repetitive development tasks.
+- Thinking through edge cases and implementation approaches.
+
+The final application structure, technical decisions, behaviour, testing, and validation were reviewed and tested during development.
+
+AI was used as a development aid rather than as a replacement for understanding the implementation.
+
+---
+
+# What I Would Improve With More Time
+
+If the project were developed further, I would consider adding:
+
+### Authentication & User Accounts
+
+Introduce authentication so users can access their movie collections across multiple devices.
+
+### Automated Testing
+
+Add:
+
+- Unit tests
+- API integration tests
+- Frontend component tests
+- End-to-end tests
+
+### Improved Caching
+
+Introduce a more comprehensive caching strategy for frequently requested movie data and reduce unnecessary external API requests.
+
+### Better Performance Optimization
+
+Further optimize:
+
+- Image loading
+- Large movie lists
+- API request management
+- Client-side rendering performance
+
+### Enhanced Accessibility
+
+Improve keyboard navigation, screen-reader support, semantic markup, and accessibility testing across the application.
+
+### Production Deployment
+
+Deploy the frontend, backend, and database using production-ready infrastructure and add monitoring/logging.
+
+### More Discovery Features
+
+Potential future features include:
+
+- More advanced filters
+- Watchlist categories
+- Personalized recommendations
+- Additional movie metadata
+- Improved discovery sections
+
+---
+
+# Why This Architecture?
+
+The architecture was chosen to keep the application maintainable and to match the requirements of a real-world full-stack application.
+
+The main principles were:
+
+- Keep the frontend focused on presentation and user interaction.
+- Keep external API communication inside the backend.
+- Keep persistent collection data in MongoDB.
+- Transform external data into an application-specific format.
+- Avoid unnecessary API requests.
+- Handle incomplete external data defensively.
+- Design the UI to remain usable as the number of results increases.
+- Consider mobile and desktop experiences from the beginning.
+
+---
+
+# Repository
+
+GitHub:
+
+https://github.com/spurthygowda08/FILMIX
+
+---
 
 # Author
 
 **Spurthy Gowda**
 
-GitHub: https://github.com/spurthygowda08
+MCA Graduate | Software Engineer / Full-Stack Developer
+
+GitHub:  
+https://github.com/spurthygowda08
+
+LinkedIn:  
+https://www.linkedin.com/in/spurthygowda0810
+
+Portfolio:  
+https://spurthygowda0810.github.io
+
+---
+
+# Acknowledgements
+
+- **Trackzio** — for providing the Full-Stack Intern Assignment.
+- **TMDB** — for providing movie data through its API.
+- **MongoDB** — for database persistence.
