@@ -524,6 +524,29 @@ The project is currently provided as a source repository and local full-stack ap
 
 ---
 
+# My Role & Contribution
+
+I was responsible for the end-to-end development of FILMIX as a full-stack application.
+
+My contributions included:
+
+- Understanding and translating the assignment requirements into application features.
+- Designing the overall frontend and backend structure.
+- Developing the React + TypeScript frontend.
+- Building the Node.js + Express backend APIs.
+- Integrating the TMDB API through the backend.
+- Designing and implementing the MongoDB-based movie collection.
+- Implementing movie search, filtering, sorting, pagination, and recommendations.
+- Handling loading states, empty results, incomplete movie data, and API-related failures.
+- Implementing responsive layouts for desktop and mobile screens.
+- Debugging and testing the application across the main user flows.
+- Making technical and UX decisions based on the requirements of the assignment.
+- Validating the final implementation and refining the application based on testing.
+
+I was involved in the complete development cycle, from understanding the requirements and planning the solution to implementation, debugging, testing, and final refinement.
+
+---
+
 # Testing & Quality Checks
 
 The application was manually tested across the major user flows and edge cases.
@@ -565,12 +588,12 @@ I used **ChatGPT** to help with:
 - Understanding third-party API documentation and request handling.
 - Troubleshooting implementation issues.
 - Reviewing frontend and backend implementation details.
+- Thinking through edge cases and possible implementation approaches.
 - Assisting with repetitive development tasks.
-- Thinking through edge cases and implementation approaches.
 
-The final application structure, technical decisions, behaviour, testing, and validation were reviewed and tested during development.
+The final application architecture, technical decisions, implementation, testing, and validation were reviewed and tested by me.
 
-AI was used as a development aid rather than as a replacement for understanding the implementation.
+AI was used as a development aid to improve productivity and problem-solving, while I remained responsible for understanding and validating the final implementation.
 
 ---
 
